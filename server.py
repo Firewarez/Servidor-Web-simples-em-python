@@ -3,43 +3,54 @@ import sys
 
 serverSocket = socket(AF_INET, SOCK_STREAM)
 
+# Prepara a porta
 serverPort = 6789             
 serverSocket.bind(('', serverPort))
-serverSocket.listen(1)         
+serverSocket.listen(1)          
 
+print(f'O Servidor está pronto! Acesse: http://localhost:{serverPort}/HelloWorld.html')
 
 while True:
-    # Estabelece a conexão
-    print('Ready to serve...')
+    # 1. Aceita a conexão
     connectionSocket, addr = serverSocket.accept()
+    
     try:
-        # Recebe a mensagem do cliente (requisição HTTP)
+        # 2. Recebe a mensagem do cliente
         message = connectionSocket.recv(1024).decode()
 
+        # VACINA 1: Se a mensagem vier vazia, fecha e ignora
+        if not message:
+            connectionSocket.close()
+            continue
+
+        # 3. Tenta ler o nome do arquivo
         filename = message.split()[1]
         f = open(filename[1:], 'r')
         outputdata = f.read()
         
-
-        
+        # 4. Se achou o arquivo, envia a resposta 200 OK
         header = "HTTP/1.1 200 OK\r\n\r\n"
         connectionSocket.send(header.encode())
 
-        # Envia o conteúdo do arquivo ao cliente
         for i in range(0, len(outputdata)):
             connectionSocket.send(outputdata[i].encode())
         connectionSocket.send("\r\n".encode())
 
-        # Fecha a conexão com o cliente
         connectionSocket.close()
 
     except IOError:
-        # Envia mensagem de erro 404 se o arquivo não for encontrado
+        # Erro 404: Arquivo não encontrado
         error_header = "HTTP/1.1 404 Not Found\r\n\r\n"
         error_body = "<html><body><h1>404 Not Found</h1></body></html>"
-        connectionSocket.send(error_header.encode())
-        connectionSocket.send(error_body.encode())
+        try:
+            connectionSocket.send(error_header.encode())
+            connectionSocket.send(error_body.encode())
+        except:
+            pass # Se der erro ao enviar o erro, apenas segue a vida
+        connectionSocket.close()
 
+    except IndexError:
+        # Se o navegador mandar um pedido incompleto, apenas fecha a conexão
         connectionSocket.close()
 
 serverSocket.close()
