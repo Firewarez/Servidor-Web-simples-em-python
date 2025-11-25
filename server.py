@@ -1,14 +1,15 @@
 from socket import *
 import sys  
 
+#Cria ponto de comunicação: AF_INET utiliza IPV4 , SOCK_STREAM = PROTOCOLO TCP
 serverSocket = socket(AF_INET, SOCK_STREAM)
 
-# Prepara a porta
-serverPort = 6789             
+# 1 Prepara a porta | 2 Rerva a serverPort | 3 Define a fila de espera
+serverPort = 6789          
 serverSocket.bind(('', serverPort))
 serverSocket.listen(1)          
 
-print(f'O Servidor está pronto! Acesse: http://localhost:{serverPort}/HelloWorld.html')
+print(f'\nServidor funcionando em: http://localhost:{serverPort}/HelloWorld.html')
 
 while True:
     # 1. Aceita a conexão
@@ -18,7 +19,7 @@ while True:
         # 2. Recebe a mensagem do cliente
         message = connectionSocket.recv(1024).decode()
 
-        # VACINA 1: Se a mensagem vier vazia, fecha e ignora
+        Se a mensagem vier vazia, fecha e ignora
         if not message:
             connectionSocket.close()
             continue
